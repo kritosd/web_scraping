@@ -1,4 +1,1 @@
-# web_scraping
-# web_scraping
-# web_scraping
-# web_scraping
+# Web Scraping based on BeautifulSoup and Python.
