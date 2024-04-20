@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import utils
 from urllib.parse import urlparse
+from datetime import datetime
 
 class WebScraper:
     def __init__(self, url):
@@ -14,6 +15,19 @@ class WebScraper:
             return response.content
         else:
             print("Failed to retrieve page content.")
+            return None
+
+    def check_content_validity(self):
+        if self.page_content:
+            soup = BeautifulSoup(self.page_content, 'html.parser')                        
+            resultInfo = soup.find(class_='resultInfo')
+            balls = resultInfo.find(class_='balls')
+            draw_column = ''
+            for ball in balls.select('.resultBall.ball'):
+                draw_column = draw_column + ',' + ball.text
+
+            return draw_column
+        else:
             return None
 
     def get_draw_column(self):
@@ -103,7 +117,7 @@ class WebScraper:
         if path_components:
             date =  path_components[-1]
 
-        return date
+        return datetime.strptime(date, '%d-%m-%Y').date()
 
     def get_dividents(self):
         if self.page_content:

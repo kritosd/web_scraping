@@ -1,6 +1,6 @@
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, BigInteger, Column, DateTime, Time, String, Integer, Enum, DECIMAL, TIMESTAMP
+from sqlalchemy import create_engine, BigInteger, Column, DateTime, Time, String, Integer, Enum, DECIMAL, TIMESTAMP, Date
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
@@ -11,7 +11,7 @@ class Euromillions(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     draw_number = Column(BigInteger, primary_key=True)
-    draw_date = Column(String(200), nullable=False)
+    draw_date = Column(Date, nullable=False)
     draw_time = Column(Time, nullable=False, default='00:00:00')
     draw_column = Column(String(200), nullable=False )
     joker = Column(String(50), nullable=False, default='' )
