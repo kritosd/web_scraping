@@ -215,3 +215,29 @@ class WebScraper:
                 return None
         else:
             return None
+
+    def get_prev_draw_url(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                nextResult = soup.find(attrs={"title": "View the Previous EuroMillions Result"})
+                link = nextResult.get('href')
+                prev_date = datetime.strptime(link.split('/')[-1], '%d-%m-%Y')
+                return prev_date
+            except:
+                return None
+        else:
+            return None
+
+    def get_next_draw_url(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                nextResult = soup.find(attrs={"title": "View the Next EuroMillions Result"})
+                link = nextResult.get('href')
+                next_date = datetime.strptime(link.split('/')[-1], '%d-%m-%Y')
+                return next_date
+            except:
+                return None
+        else:
+            return None
