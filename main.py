@@ -1,7 +1,7 @@
 import db
 from models import Euromillions
 from webScraper import WebScraper
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 
 def scrap(date):
@@ -29,6 +29,10 @@ def scrap(date):
             db.add(data)
 
         return scraper.get_next_draw_url()
+    else:
+        # Add one day to the date
+        nextDayDate = date + timedelta(days=1)
+        return scrap(nextDayDate)
         
 
 def main():
