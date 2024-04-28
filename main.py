@@ -4,7 +4,8 @@ from webScraper import WebScraper
 from datetime import datetime, timedelta
 import sys
 
-def scrap(date):
+def scrap(date, retry = 0):
+    print('Scarp date: '+date.strftime('%d-%m-%Y'))
     url = 'https://www.euro-millions.com/results/'+date.strftime('%d-%m-%Y')
     scraper = WebScraper(url)
     validity = scraper.check_content_validity()
@@ -30,16 +31,20 @@ def scrap(date):
 
         return scraper.get_next_draw_url()
     else:
-        # Add one day to the date
-        nextDayDate = date + timedelta(days=1)
-        return scrap(nextDayDate)
+        if (retry < 10):
+            retry = retry + 1
+            # Add one day to the date
+            nextDayDate = date + timedelta(days=1)
+            return scrap(nextDayDate, retry)
+        else:
+            return None
         
 
 def main():
     # Check if argument provided
     if len(sys.argv) < 2:
-        print("No parameter provided. Please provide at least one parameter.")
-        sys.exit(1)
+        date_str1 = None
+        date1 = None
     else:
         date_str1 = sys.argv[1]
         date1 = datetime.strptime(date_str1, '%d-%m-%Y')
@@ -55,12 +60,23 @@ def main():
 
     if date1 is not None and date2 is not None:
         next_date = scrap(date1)
-        while next_date <= date2:
+        while next_date is not None and next_date <= date2:
+            next_date = scrap(next_date)
+    elif date1 is None and date2 is None:
+        # Get the current date and time
+        current_datetime = datetime.now()
+        # Extract only the date part
+        today = datetime.strptime(current_datetime.strftime('%d-%m-%Y'), '%d-%m-%Y')
+        yesterday = today - timedelta(days=1)
+        next_date = scrap(yesterday)
+        while next_date is not None and next_date <= today:
             next_date = scrap(next_date)
     elif date1 == date2:
         next_date = scrap(date1)
     elif date1 is not None and date2 is None:
         next_date = scrap(date1)
+
+    print('Script terminated.')
 
 
 if __name__ == "__main__":
