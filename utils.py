@@ -7,12 +7,12 @@ def convert_to_normal_format(number_str):
     # Remove commas from the input string
     number_str = number_str.replace(",", "")
 
-    try:
-        # Try to set locale to 'en_US.UTF-8'
-        locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
-    except locale.Error:
-        # Fallback to a different locale if 'en_US.UTF-8' is not supported
-        locale.setlocale(locale.LC_NUMERIC, 'C')
+    # try:
+    #     # Try to set locale to 'en_US.UTF-8'
+    #     locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
+    # except locale.Error:
+    #     # Fallback to a different locale if 'en_US.UTF-8' is not supported
+    #     locale.setlocale(locale.LC_NUMERIC, 'C')
 
     # Convert the processed string to a float
     number_float = float(number_str)
