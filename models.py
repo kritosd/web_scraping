@@ -36,3 +36,18 @@ class Euromillions(Base):
     __table_args__ = {
         'mysql_collate': 'utf8_unicode_ci'
     }
+
+
+class AllGamesJackpots(Base):
+    __tablename__ = 'all_games_jackpots'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    state = Column(String(50), nullable=False, default='' )
+    game_name = Column(String(50), nullable=False, default='' )
+    next_draw_jackpot = Column(BigInteger, nullable=False, default=0)
+    rollover = Column(BigInteger, nullable=False, default=0)
+    timestamp = Column(TIMESTAMP, default=datetime.utcnow)
+
+    __table_args__ = {
+        'mysql_collate': 'utf8_unicode_ci'
+    }

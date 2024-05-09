@@ -1,11 +1,26 @@
 import db
-from models import Euromillions
+from models import Euromillions, AllGamesJackpots
 from webScraper import WebScraper
 from datetime import datetime, timedelta
 import sys
 
+def getTodayJackpot():
+    url = 'https://www.euro-millions.com'
+    scraper = WebScraper(url)
+    
+    data = AllGamesJackpots(
+        state='EURO',
+        game_name='EUROMILLIONS',
+        next_draw_jackpot=scraper.get_jackpot(),
+        rollover=scraper.get_rollover()
+    )
+    if db.record_exists('game_name', 'EUROMILLIONS', AllGamesJackpots):
+        db.update_record('game_name', 'EUROMILLIONS', data, AllGamesJackpots)
+    else:
+        db.add(data)
+
 def scrap(date, retry = 0):
-    print('Scarp date: '+date.strftime('%d-%m-%Y'))
+    print('Scrap date: '+date.strftime('%d-%m-%Y'))
     url = 'https://www.euro-millions.com/results/'+date.strftime('%d-%m-%Y')
     scraper = WebScraper(url)
     validity = scraper.check_content_validity()
@@ -24,8 +39,8 @@ def scrap(date, retry = 0):
                 millionaire_maker=scraper.get_millionaire_maker(),
                 next_jackpot_1=scraper.get_next_jackpot_1()
             )
-        if db.record_exists(draw_number):
-            db.update_record(draw_number, data)
+        if db.record_exists('draw_number', draw_number, Euromillions):
+            db.update_record('draw_number', draw_number, data, Euromillions)
         else:
             db.add(data)
 
@@ -57,6 +72,7 @@ def main():
         date_str2 = sys.argv[2]
         date2 = datetime.strptime(date_str2, '%d-%m-%Y')
 
+    getTodayJackpot()
 
     if date1 is not None and date2 is not None:
         next_date = scrap(date1)

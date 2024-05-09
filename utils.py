@@ -32,3 +32,12 @@ def convert_to_normal_format(number_str):
 def remove_non_numeric(string):
     # Remove non-numeric characters using regular expression
     return re.sub(r'[^\d.]+', '', string)
+
+def extract_number_from_string(string):
+    
+    # Extract the number using regular expressions
+    number_str = re.search(r'[\d,]+', string).group()
+    
+    # Remove commas from the number string and convert it to an integer
+    number = int(number_str)
+    return number

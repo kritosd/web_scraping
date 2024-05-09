@@ -241,3 +241,30 @@ class WebScraper:
                 return None
         else:
             return None
+
+    def get_jackpot(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                nextJackpot = soup.find(class_='nextJackpot')
+                jackpotString = nextJackpot.find(class_='jackpot')
+                jackpot = utils.extract_number_from_string(jackpotString.text)
+                return jackpot * 1000000
+            except:
+                return None
+        else:
+            return None
+
+    def get_rollover(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                nextJackpot = soup.find(class_='nextJackpot')
+                rolloverContainer = nextJackpot.find(class_='rollover')
+                rolloverString = rolloverContainer.find('span')
+                rollover = utils.extract_number_from_string(rolloverString.text)
+                return rollover
+            except:
+                return None
+        else:
+            return None
