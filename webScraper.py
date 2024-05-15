@@ -265,6 +265,6 @@ class WebScraper:
                 rollover = utils.extract_number_from_string(rolloverString.text)
                 return rollover
             except:
-                return None
+                return 0
         else:
             return None
