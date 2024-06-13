@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import sys
 import utils
 
-def getTodayJackpot():
+def getTodayJackpotEuro():
     url = 'https://www.euro-millions.com'
     scraper = EuroScraper(url)
     
@@ -21,12 +21,10 @@ def getTodayJackpot():
     else:
         db.add(data)
 
-def getTodayJackpot2():
+def getTodayJackpotMega():
     url = 'https://www.megamillions.com/Winning-Numbers.aspx'
     scraper = MegaScraper(url)
     
-    print('elanterRE')
-    print(scraper.get_jackpot())
     data = AllGamesJackpots(
         state='MEGA',
         game_name='MEGAMILLIONS',
@@ -76,16 +74,13 @@ def scrapEuromillions(date, retry = 0):
 
 def scrapMegamillions(date, retry = 0):
     print('Scrap date: '+date.strftime('%d-%m-%Y'))
-    url = 'https://www.megamillions.com/Winning-Numbers/Previous-Drawings/Previous-Drawing-Page.aspx?date='+str(utils.convert_date_to_100_ns_intervals(date.strftime('%d-%m-%Y')))
+    intervals = utils.convert_date_to_100_ns_intervals(date.strftime('%d-%m-%Y'))
+    url = 'https://www.megamillions.com/Winning-Numbers/Previous-Drawings/Previous-Drawing-Page.aspx?date='+str(intervals)
     
-    print(str(utils.convert_date_to_100_ns_intervals(date.strftime('%d-%m-%Y'))))
     scraper = MegaScraper(url)
     validity = scraper.check_content_validity()
-    print(validity)
     if validity:
         draw_date = scraper.get_draw_date()
-        print(draw_date)
-        print('heyyyyyyy')
         data = Megamillions(
                 draw_date=draw_date,
                 draw_column=scraper.get_draw_column(),
@@ -106,8 +101,8 @@ def scrapMegamillions(date, retry = 0):
                 print(e)
         else:
             db.add(data)
-
-        return scraper.get_next_draw_url()
+            
+        return date + timedelta(days=1)
     else:
         if (retry < 10):
             retry = retry + 1
@@ -121,8 +116,10 @@ def scrap(date):
     game = 'megamillions'
     result = None
     if game == 'euromillions':
+        getTodayJackpotEuro()
         result = scrapEuromillions(date)
     if game == 'megamillions':
+        getTodayJackpotMega()
         result = scrapMegamillions(date)
 
     return result
@@ -145,7 +142,6 @@ def main():
         date_str2 = sys.argv[2]
         date2 = datetime.strptime(date_str2, '%d-%m-%Y')
 
-    getTodayJackpot()
 
     if date1 is not None and date2 is not None:
         next_date = scrap(date1)
@@ -165,7 +161,7 @@ def main():
     elif date1 is not None and date2 is None:
         next_date = scrap(date1)
 
-    print('Script terminated.')
+    print('Script completed.')
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
 from webScraper import WebScraper
 import time
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError
 
 class MegaScraper(WebScraper):
     def __init__(self, url):
@@ -18,9 +18,19 @@ class MegaScraper(WebScraper):
             browser = p.chromium.launch()
             page = browser.new_page()
             page.goto(self.url)
-            page_content = page.content()
-            browser.close()
-            return page_content
+            
+            try:
+                # Wait for the element with the specific class to become visible
+                page.wait_for_selector('.detailPendingJackpot', state='visible', timeout=10000)
+
+                page_content = page.content()
+                browser.close()
+                return page_content
+
+            except TimeoutError:
+                print(f"Timeout exceeded while waiting for page to load")
+                browser.close()
+                return None
 
     def check_content_validity(self):
         if self.page_content:
@@ -49,11 +59,9 @@ class MegaScraper(WebScraper):
                 winningNumbersHeader = page_content.find(class_='winningNumbersHeader')
                 contentRow = winningNumbersHeader.find(class_='contentRow')
                 balls = contentRow.find(class_='numbers')
-                print(balls)
                 draw_column = ''
                 for ball in balls.select('.ball:not(.winNumMB)'):
                     draw_column = draw_column + ',' + ball.text
-                    print(ball)
                 return draw_column
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -86,7 +94,6 @@ class MegaScraper(WebScraper):
                 balls = contentRow.find(class_='numbers')
                 ballsArray = balls.select('.ball.winNumMB')
                 joker = ballsArray[0].text
-                print(joker)
                 return joker
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -105,7 +112,6 @@ class MegaScraper(WebScraper):
                 balls = contentRow.find(class_='numbers')
                 ballsArray = balls.select('.ball.winNumMB')
                 balander = ballsArray[0].text
-                print(balander)
                 return balander
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -176,12 +182,9 @@ class MegaScraper(WebScraper):
                 
                 dividents = ''
                 for winner in tableJackpotWinningNumbers.select('.ie11-col3')[1:]:
-                    print(winner.text)
                     number = utils.lexical_to_number(winner.text)
-                    print(number)
                     # number = utils.convert_to_normal_format(str(winner.text))
                     dividents = dividents + '#' + str(number)
-                print(dividents)
                 return dividents
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -199,11 +202,8 @@ class MegaScraper(WebScraper):
                 
                 multi_winners = ''
                 for winner in tableJackpotWinningNumbers.select('.ie11-col4')[1:]:
-                    print(winner.text)
-                    # number = utils.lexical_to_number(winner.text)
-                    # print(number)
                     multi_winners = multi_winners + '#' + utils.convert_to_normal_format(winner.text if winner.text else '0')
-                print(multi_winners)
+                    
                 return multi_winners
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -222,7 +222,6 @@ class MegaScraper(WebScraper):
                 cashOpt = contentRow.find(class_='cashOpt')
                 nextCashOpt = cashOpt.find(class_='nextCashOpt')
                 draw_cash_option = utils.lexical_to_number(nextCashOpt.text)
-                print(draw_cash_option)
                 return draw_cash_option
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -243,7 +242,6 @@ class MegaScraper(WebScraper):
                 megaplier = numbers.find(class_='megaplier')
                 winNumMP = megaplier.find(class_='winNumMP')
                 multiplier = utils.convert_to_normal_format(winNumMP.text)
-                print(multiplier)
                 return int(multiplier)
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -314,14 +312,12 @@ class MegaScraper(WebScraper):
         else:
             return None
 
-    def get_next_draw_url(self):
-        if self.page_content:
+    def get_next_draw_url(self, baseUrl, intervals):
+        if intervals:
             try:
-                soup = BeautifulSoup(self.page_content, 'html.parser')
-                nextResult = soup.find(attrs={"title": "View the Next EuroMillions Result"})
-                link = nextResult.get('href')
-                next_date = datetime.strptime(link.split('/')[-1], '%d-%m-%Y')
-                return next_date
+                nextInterval = intervals + 864000000000
+                next_url = baseUrl + str(nextInterval)
+                return next_url
             except:
                 return None
         else:
@@ -335,7 +331,6 @@ class MegaScraper(WebScraper):
                 winningNumbersHeader = winningNumbersPg.find(class_='winningNumbersHeader')
                 winningNumbersDate = winningNumbersHeader.findAll(class_='winningNumbersDate')
                 estJackpot = winningNumbersDate[1].find(class_='estJackpot')
-                print(estJackpot)
                 jackpot = utils.lexical_to_number(estJackpot.text)
                 return jackpot
             except:

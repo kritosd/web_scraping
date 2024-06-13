@@ -49,19 +49,15 @@ def extract_number_from_string(string):
 def convert_date_to_100_ns_intervals(date_string):
     # Parse the date string into a datetime object
     target_date = datetime.datetime.strptime(date_string, "%d-%m-%Y")
-    print("Target Date:", target_date)
     
     # Define the starting date (epoch start)
     start_date = datetime.datetime(1, 1, 1)
-    print("Start Date:", start_date)
     
     # Calculate the difference as a timedelta object
     delta = target_date - start_date
-    print("Delta (Days):", delta.days)
     
     # Convert the difference to total seconds
     total_seconds = delta.total_seconds()
-    print("Total Seconds:", total_seconds)
     
     # Convert total seconds to 100-nanosecond intervals
     total_intervals = total_seconds * 10_000_000  # 10 million 100-nanosecond intervals in a second
@@ -72,7 +68,6 @@ def convert_date_to_100_ns_intervals(date_string):
 
 def convert_100_ns_intervals_to_date(intervals):
     try:
-        print(intervals)
         # Convert the intervals to total seconds
         total_seconds = intervals / 10_000_000  # 10 million 100-nanosecond intervals in a second
         
