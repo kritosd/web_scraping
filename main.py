@@ -112,8 +112,7 @@ def scrapMegamillions(date, retry = 0):
         else:
             return None
         
-def scrap(date):
-    game = 'megamillions'
+def scrap(date, game):
     result = None
     if game == 'euromillions':
         getTodayJackpotEuro()
@@ -128,38 +127,46 @@ def scrap(date):
 def main():
     # Check if argument provided
     if len(sys.argv) < 2:
-        date_str1 = None
-        date1 = None
+        game = None
+        print('define a game.')
+        return
     else:
-        date_str1 = sys.argv[1]
-        date1 = datetime.strptime(date_str1, '%d-%m-%Y')
+        game = sys.argv[1]
 
     # Check if 2 arguments provided
     if len(sys.argv) < 3:
+        date_str1 = None
+        date1 = None
+    else:
+        date_str1 = sys.argv[2]
+        date1 = datetime.strptime(date_str1, '%d-%m-%Y')
+
+    # Check if 3 arguments provided
+    if len(sys.argv) < 4:
         date_str2 = None
         date2 = None
     else:
-        date_str2 = sys.argv[2]
+        date_str2 = sys.argv[3]
         date2 = datetime.strptime(date_str2, '%d-%m-%Y')
 
 
     if date1 is not None and date2 is not None:
-        next_date = scrap(date1)
+        next_date = scrap(date1, game)
         while next_date is not None and next_date <= date2:
-            next_date = scrap(next_date)
+            next_date = scrap(next_date, game)
     elif date1 is None and date2 is None:
         # Get the current date and time
         current_datetime = datetime.now()
         # Extract only the date part
         today = datetime.strptime(current_datetime.strftime('%d-%m-%Y'), '%d-%m-%Y')
         yesterday = today - timedelta(days=1)
-        next_date = scrap(yesterday)
+        next_date = scrap(yesterday, game)
         while next_date is not None and next_date <= today:
-            next_date = scrap(next_date)
+            next_date = scrap(next_date, game)
     elif date1 == date2:
-        next_date = scrap(date1)
+        next_date = scrap(date1, game)
     elif date1 is not None and date2 is None:
-        next_date = scrap(date1)
+        next_date = scrap(date1, game)
 
     print('Script completed.')
 
