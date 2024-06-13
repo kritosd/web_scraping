@@ -29,11 +29,12 @@ def record_exists(filterColumn, filterMatch, Model):
 def update_record(filterColumn, filterMatch, data, Model):
     # Query the record by filter
     record = session.query(Model).filter_by(**{filterColumn: filterMatch}).first()
-
+    print('update_reeeee')
     if record:
         valid_attributes = vars(Model)
 
         for key, value in vars(data).items():
+            print(value)
             # Check if the key exists as an attribute in the model
             if key in valid_attributes:
                 setattr(record, key, value)
