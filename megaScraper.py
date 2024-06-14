@@ -6,31 +6,40 @@ from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
 from webScraper import WebScraper
 import time
-from playwright.sync_api import sync_playwright, TimeoutError
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 
 class MegaScraper(WebScraper):
+
     def __init__(self, url):
         self.url = url
-        self.page_content = self.get_dynamic_soup()
+        self.page_content = self._get_page_content()
 
-    def get_dynamic_soup(self):
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto(self.url)
-            
-            try:
-                # Wait for the element with the specific class to become visible
-                page.wait_for_selector('.detailPendingJackpot', state='visible', timeout=10000)
+    def _get_page_content(self):
+        # Use the path to the Chromium driver
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        
+        driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=options)
+        driver.get(self.url)
 
-                page_content = page.content()
-                browser.close()
-                return page_content
+        # Wait for the page to load completely
+        self.wait_until_loaded(driver)
+        content = driver.page_source
+        driver.quit()
+        return content
 
-            except TimeoutError:
-                print(f"Timeout exceeded while waiting for page to load")
-                browser.close()
-                return None
+    def wait_until_loaded(self, driver, timeout=30):
+        # Wait for the page to load completely
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            if driver.execute_script('return document.readyState') == 'complete':
+                break
+            time.sleep(1)
+
 
     def check_content_validity(self):
         if self.page_content:
@@ -43,6 +52,10 @@ class MegaScraper(WebScraper):
                 balls = contentRow.find(class_='numbers')
                 draw_column = ''
                 for ball in balls.select('.ball'):
+                    print('EDW:') 
+                    print(ball.text) 
+                    if (ball.text == ''):
+                        return None
                     draw_column = draw_column + ',' + ball.text
                 return draw_column
             except:
