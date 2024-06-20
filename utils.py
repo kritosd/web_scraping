@@ -85,9 +85,12 @@ def convert_100_ns_intervals_to_date(intervals):
 
 
 def lexical_to_number(lexical):
+    
     if lexical.strip().lower() == 'jackpot':
         return int(0)
-    
+    if lexical.strip().lower() == 'rollover':
+        return int(0)
+
     # Remove the dollar sign and any commas
     lexical = lexical.replace('$', '').replace(',', '').strip()
     
@@ -103,7 +106,7 @@ def lexical_to_number(lexical):
     match = re.match(r'([\d\.]+)\s*(\w+)?', lexical, re.IGNORECASE)
     if not match:
         raise ValueError("Input string is not in the expected format.")
-    
+
     # Extract the number and the unit
     number, unit = match.groups()
     

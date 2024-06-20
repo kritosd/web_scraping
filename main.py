@@ -1,7 +1,8 @@
 import db
-from models import Euromillions, Megamillions, AllGamesJackpots
+from models import Euromillions, Megamillions, AllGamesJackpots, Powerball, PowerballDoublePlay
 from euroScraper import EuroScraper
 from megaScraper import MegaScraper
+from powerballScraper import PowerballScraper
 from datetime import datetime, timedelta
 import sys
 import utils
@@ -26,7 +27,7 @@ def getTodayJackpotMega():
     scraper = MegaScraper(url)
     
     data = AllGamesJackpots(
-        state='MEGA',
+        state='EURO',
         game_name='MEGAMILLIONS',
         next_draw_jackpot=scraper.get_jackpot(),
         draw_cash_option=scraper.get_draw_cash_option()
@@ -35,6 +36,28 @@ def getTodayJackpotMega():
         db.update_record('game_name', 'MEGAMILLIONS', data, AllGamesJackpots)
     else:
         db.add(data)
+
+def getTodayJackpotPowerball(date):
+    print('Scrap date: '+date.strftime('%d-%m-%Y'))
+    url = 'https://www.powerball.net/numbers/'+date.strftime('%Y-%m-%d')
+    print(url)
+    scraper = PowerballScraper(url)
+    
+    validity = scraper.check_content_validity()
+    if validity:
+        data = AllGamesJackpots(
+            state='USA',
+            game_name='POWERBALL',
+            next_draw_jackpot=scraper.get_jackpot(),
+            draw_cash_option=scraper.get_draw_cash_option(),
+            rollover=scraper.get_rollover()
+        )
+        if db.record_exists('game_name', 'POWERBALL', AllGamesJackpots):
+            db.update_record('game_name', 'POWERBALL', data, AllGamesJackpots)
+        else:
+            db.add(data)
+    else:
+        return None
 
 def scrapEuromillions(date, retry = 0):
     print('Scrap date: '+date.strftime('%d-%m-%Y'))
@@ -112,6 +135,64 @@ def scrapMegamillions(date, retry = 0):
         else:
             return None
         
+
+def scrapPowerball(date, retry = 0):
+    print('Scrap date: '+date.strftime('%d-%m-%Y'))
+    url = 'https://www.powerball.net/numbers/'+date.strftime('%Y-%m-%d')
+    scraper = PowerballScraper(url)
+    validity = scraper.check_content_validity()
+    if validity:
+        draw_date = scraper.get_draw_date()
+        data = Powerball(
+                draw_date=draw_date,
+                draw_column=scraper.get_draw_column(),
+                joker=scraper.get_joker(),
+                balander=scraper.get_balander(),
+                columns=scraper.get_columns(),
+                total_winners=scraper.get_total_winners(),
+                winners=scraper.get_winners(),
+                dividents=scraper.get_dividents(),
+                multi_winners=scraper.get_multi_winners(),
+                next_jackpot_1=scraper.get_next_jackpot_1(),
+                multiplier=scraper.get_multiplier(),
+                big_winners_5M=scraper.get_big_winners_5M()
+            )
+        if db.record_exists('draw_date', draw_date, Powerball):
+            db.update_record('draw_date', draw_date, data, Powerball)
+        else:
+            db.add(data)
+        
+        draw_column_db = scraper.get_draw_column_db()
+        if (draw_column_db is not None):
+            data = PowerballDoublePlay(
+                draw_date=draw_date,
+                draw_column=scraper.get_draw_column_db(),
+                joker=scraper.get_joker_db(),
+                balander=scraper.get_balander_db(),
+                columns=scraper.get_columns(),
+                total_winners=scraper.get_total_winners(),
+                winners=scraper.get_winners(),
+                dividents=scraper.get_dividents(),
+                next_jackpot_1=scraper.get_next_jackpot_1(),
+                multiplier=scraper.get_multiplier()
+            )
+            if db.record_exists('draw_date', draw_date, PowerballDoublePlay):
+                db.update_record('draw_date', draw_date, data, PowerballDoublePlay)
+            else:
+                db.add(data)
+
+        return scraper.get_next_draw_url()
+    else:
+        if (retry < 10):
+            retry = retry + 1
+            # Add one day to the date
+            nextDayDate = date + timedelta(days=1)
+            return scrapPowerball(nextDayDate, retry)
+        else:
+            return None
+
+   
+
 def scrap(date, game):
     result = None
     if game == 'euromillions':
@@ -120,6 +201,9 @@ def scrap(date, game):
     if game == 'megamillions':
         getTodayJackpotMega()
         result = scrapMegamillions(date)
+    if game == 'powerball':
+        getTodayJackpotPowerball(date)
+        result = scrapPowerball(date)
 
     return result
 
