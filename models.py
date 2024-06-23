@@ -98,7 +98,7 @@ class Powerball(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     draw_number = Column(BigInteger, nullable=True)
-    draw_date = Column(Date, nullable=False)
+    draw_date = Column(Date, primary_key=True)
     draw_time = Column(Time, nullable=False, default='00:00:00')
     draw_column = Column(String(200), nullable=False )
     joker = Column(String(50), nullable=False, default='' )
@@ -135,7 +135,7 @@ class PowerballDoublePlay(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     draw_number = Column(BigInteger, nullable=True)
-    draw_date = Column(Date, nullable=False)
+    draw_date = Column(Date, primary_key=True)
     draw_time = Column(Time, nullable=False, default='00:00:00')
     draw_column = Column(String(200), nullable=False )
     joker = Column(String(50), nullable=False, default='' )

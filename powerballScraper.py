@@ -31,7 +31,8 @@ class PowerballScraper(WebScraper):
                 soup = BeautifulSoup(self.page_content, 'html.parser')
                 container = soup.select(".container-fluid.l-bg.-alt")
                 lballs = container[0].find(class_='l-balls')
-                balls = lballs.find(class_='balls')
+                ballsAscending = lballs.find(id='ballsAscending')
+                balls = ballsAscending.find(class_='balls')
                 draw_column = ''
                 for ball in balls.select('.new.ball'):
                     draw_column = draw_column + ',' + ball.text
@@ -96,8 +97,8 @@ class PowerballScraper(WebScraper):
                 soup = BeautifulSoup(self.page_content, 'html.parser')
                 container = soup.select(".container-fluid.l-bg.-alt")
                 lballs = container[0].find(class_='l-balls')
-                ballsDrawnDP = lballs.find(id='ballsDrawnDP')
-                balls = ballsDrawnDP.find(class_='balls')
+                ballsAscendingDP = lballs.find(id='ballsAscendingDP')
+                balls = ballsAscendingDP.find(class_='balls')
                 draw_column = ''
                 for ball in balls.select('.new.ball'):
                     draw_column = draw_column + ',' + ball.text
@@ -326,10 +327,12 @@ class PowerballScraper(WebScraper):
             try:
                 soup = BeautifulSoup(self.page_content, 'html.parser')
                 container = soup.select(".container-fluid.l-bg.-alt")
-                statsBox = container[0].find(class_='l-stats-box')
-                btnNext = statsBox.find('n_next')
-                link = btnNext.get('href')
-                next_date = datetime.strptime(link.split('/')[-1], '%d-%m-%Y')
+                statsBox = container[0].find(class_='nav-btns')
+                btnNext = statsBox.select(".nav-btn._next")
+                link = btnNext[0].get('href')
+                date_obj = datetime.strptime(link.split('/')[-1], "%Y-%m-%d")
+                next_date_str = date_obj.strftime("%d-%m-%Y")
+                next_date = datetime.strptime(next_date_str, "%d-%m-%Y")
                 return next_date
             except:
                 return None
