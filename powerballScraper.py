@@ -286,7 +286,7 @@ class PowerballScraper(WebScraper):
                 soup = BeautifulSoup(self.page_content, 'html.parser')
                 container = soup.select(".container-fluid.l-bg.-alt")
                 statsBox = container[0].find(class_='l-stats-box')
-                jwinners = statsBox.find(class_='-j-winners')
+                jwinners = statsBox.find(class_='-winners')
                 winners = jwinners.find('div')
                 total_winners = utils.convert_to_normal_format(winners.text)
                 return total_winners
