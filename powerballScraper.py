@@ -306,9 +306,9 @@ class PowerballScraper(WebScraper):
                 columns = utils.convert_to_normal_format(acen[1].find(class_='title').text)
                 return columns
             except:
-                return None
+                return 0
         else:
-            return None
+            return 0
 
     def get_prev_draw_url(self):
         if self.page_content:

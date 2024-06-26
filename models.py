@@ -103,7 +103,7 @@ class Powerball(Base):
     draw_column = Column(String(200), nullable=False )
     joker = Column(String(50), nullable=False, default='' )
     balander = Column(String(50), nullable=False, default='' )
-    columns = Column(BigInteger, nullable=True, default=0)
+    columns = Column(BigInteger, nullable=False, default=0)
     total_winners = Column(BigInteger, nullable=False, default=0)
     win_nums_flag = Column(Enum('Y', 'N' ), nullable=False, default='Y')
     all_winners_flag = Column(Enum('Y', 'N' ), nullable=False, default='Y')
