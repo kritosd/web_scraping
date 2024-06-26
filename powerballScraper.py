@@ -246,7 +246,7 @@ class PowerballScraper(WebScraper):
                     winnersDiv = row.find(attrs={"data-title": "Winners"})
                     rollover = winnersDiv.find('span')
                     if (rollover is not None and rollover.text == 'Rollover'):
-                        winners = winners + '0'
+                        winners = winners + '#0'
                     else:
                         number = winnersDiv.text
                         winners = winners + '#' + utils.convert_to_normal_format(number)
