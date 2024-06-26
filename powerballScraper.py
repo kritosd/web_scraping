@@ -17,10 +17,13 @@ class PowerballScraper(WebScraper):
                 balls = lballs.find(class_='balls')
                 draw_column = ''
                 for ball in balls.select('.new.ball'):
-                    draw_column = draw_column + ',' + ball.text
-
-                return draw_column
-            except:
+                    if ball.text.isdigit():
+                        draw_column = draw_column + ',' + ball.text
+                        return draw_column
+                    else:
+                        return None
+            except Exception as e:
+                return f"An error occurred: {e}"
                 return None
         else:
             return None
