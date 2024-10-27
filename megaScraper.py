@@ -19,11 +19,18 @@ class MegaScraper(WebScraper):
     def _get_page_content(self):
         # Use the path to the Chromium driver
         options = webdriver.ChromeOptions()
+        options.add_argument('--user-data-dir=/tmp/chrome-user-data')
+        options.binary_location = "/usr/bin/chromium"  # Adjust this path if necessary
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         
-        driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=options)
+        # driver = webdriver.Chrome(service=Service("/usr/local/bin/chromedriver"), options=options)
+        
+        # Specify the path to Chromedriver
+        service = Service(executable_path="/usr/bin/chromedriver")
+        driver = webdriver.Chrome(service=service, options=options)
+        # driver = webdriver.Chrome()
         driver.get(self.url)
 
         # Wait for the page to load completely
@@ -151,11 +158,18 @@ class MegaScraper(WebScraper):
         if self.page_content:
             try:
                 soup = BeautifulSoup(self.page_content, 'html.parser')
-                drawInfo = soup.find(class_='drawInfo')
-                dInfos = drawInfo.find_all(class_='dInfo')
-                dInfo2 = dInfos[1]
-                next_jackpot_1 = utils.convert_to_normal_format(dInfo2.find(class_='title2').text)
-                return next_jackpot_1
+                winningNumbersPg = soup.find(class_='winningNumbersPg')
+                winningNumbersHeader = winningNumbersPg.findAll(class_='winningNumbersHeader')
+                winningNumbersDate = winningNumbersPg.find(class_='winningNumbersDate')
+                estJackpot = winningNumbersDate.find(class_='estJackpot')
+                jackpot = utils.lexical_to_number(estJackpot.text)
+                return jackpot
+                # soup = BeautifulSoup(self.page_content, 'html.parser')
+                # drawInfo = soup.find(class_='drawInfo')
+                # dInfos = drawInfo.find_all(class_='dInfo')
+                # dInfo2 = dInfos[1]
+                # next_jackpot_1 = utils.convert_to_normal_format(dInfo2.find(class_='title2').text)
+                # return next_jackpot_1
             except:
                 return None
         else:
@@ -362,5 +376,54 @@ class MegaScraper(WebScraper):
                 return rollover
             except:
                 return 0
+        else:
+            return None
+
+
+    def get_big_winners_5(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                
+                print('AAAAAA')
+                bwStates = ''
+                for bigWinner in soup.select('.bigWinner'):
+                    print(bigWinner)
+                    bigWinStateFirst = bigWinner.find(class_='bigWinState')
+                    title = bigWinner.find('h3').text
+                    if bigWinStateFirst.text != 'None':
+                        if title == 'Match 5':
+                            for bwState in bigWinStateFirst.select('.bwState'):
+                                print(bwState.text)
+                                bwStates = bwStates + bwState.text
+                        
+                print(bwState)
+                return bwStates
+            except:
+                return None
+        else:
+            return None
+
+    def get_big_winners_5M(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                
+                print('AAAAAA')
+                bwStates = ''
+                for bigWinner in soup.select('.bigWinner'):
+                    print(bigWinner)
+                    bigWinStateFirst = bigWinner.find(class_='bigWinState')
+                    title = bigWinner.find('h3').text
+                    if bigWinStateFirst.text != 'None':
+                        if title == 'Match 5 + Megaplier':
+                            for bwState in bigWinStateFirst.select('.bwState'):
+                                print(bwState.text)
+                                bwStates = bwStates + bwState.text
+                        
+                print(bwState)
+                return bwStates
+            except:
+                return None
         else:
             return None

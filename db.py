@@ -2,7 +2,7 @@
 import mysql.connector
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base
+from models.models import Base
 
 # Create an engine to connect to the MySQL database
 engine = create_engine('mysql://root:123@mysql:3306/games', echo=True)

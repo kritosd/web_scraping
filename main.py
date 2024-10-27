@@ -1,8 +1,11 @@
 import db
-from models import Euromillions, Megamillions, AllGamesJackpots, Powerball, PowerballDoublePlay
+from models.models import Euromillions, Megamillions, AllGamesJackpots, Powerball, PowerballDoublePlay
+from models.models import UK_lotto, UK_lotto_hotpicks, UK_euromillions, UK_euromillions_hotpicks, UK_set_for_life, UK_thunderball
+
 from euroScraper import EuroScraper
 from megaScraper import MegaScraper
 from powerballScraper import PowerballScraper
+from games.nationalLotteryScraper import nationalLotteryScraper
 from datetime import datetime, timedelta
 import sys
 import utils
@@ -116,6 +119,9 @@ def scrapMegamillions(date, retry = 0):
                 multi_winners=scraper.get_multi_winners(),
                 draw_cash_option=scraper.get_draw_cash_option(),
                 multiplier=scraper.get_multiplier(),
+                next_jackpot_1=scraper.get_next_jackpot_1(),
+                big_winners_5=scraper.get_big_winners_5(),
+                big_winners_5M=scraper.get_big_winners_5M(),
             )
         if db.record_exists('draw_date', draw_date, Megamillions):
             try:
@@ -191,6 +197,107 @@ def scrapPowerball(date, retry = 0):
         else:
             return None
 
+
+def scrapNationalLottery(date, retry = 0):
+    print('Scrap date: '+date.strftime('%d-%m-%Y'))
+    url = 'https://www.national-lottery.co.uk/results/'
+    scraper = nationalLotteryScraper(url)
+    game = 'lotto'
+    validity = scraper.check_content_validity(game)
+    if validity:
+        draw_number = scraper.get_draw_number(game)
+        data = UK_lotto(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_lotto):
+            db.update_record('draw_number', draw_number, data, UK_lotto)
+        else:
+            db.add(data)
+
+        game = 'euromillions'
+        draw_number = scraper.get_draw_number(game)
+        data = UK_euromillions(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_euromillions):
+            db.update_record('draw_number', draw_number, data, UK_euromillions)
+        else:
+            db.add(data)
+
+        game = 'set-for-life'
+        draw_number = scraper.get_draw_number(game)
+        data = UK_set_for_life(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_set_for_life):
+            db.update_record('draw_number', draw_number, data, UK_set_for_life)
+        else:
+            db.add(data)
+
+        game = 'thunderball'
+        draw_number = scraper.get_draw_number(game)
+        data = UK_thunderball(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_thunderball):
+            db.update_record('draw_number', draw_number, data, UK_thunderball)
+        else:
+            db.add(data)
+
+        game = 'lotto-hotpicks'
+        draw_number = scraper.get_draw_number(game)
+        data = UK_lotto_hotpicks(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_lotto_hotpicks):
+            db.update_record('draw_number', draw_number, data, UK_lotto_hotpicks)
+        else:
+            db.add(data)
+
+        game = 'euromillions-hotpicks'
+        draw_number = scraper.get_draw_number(game)
+        data = UK_euromillions_hotpicks(
+                draw_number=draw_number,
+                draw_date=scraper.get_draw_date(game),
+                draw_column=scraper.get_draw_column(game),
+                joker=scraper.get_joker(game),
+                balander=scraper.get_balander(game)
+            )
+        if db.record_exists('draw_number', draw_number, UK_euromillions_hotpicks):
+            db.update_record('draw_number', draw_number, data, UK_euromillions_hotpicks)
+        else:
+            db.add(data)
+        
+        return None
+    else:
+        if (retry < 10):
+            retry = retry + 1
+            # Add one day to the date
+            nextDayDate = date + timedelta(days=1)
+            return scrapPowerball(nextDayDate, retry)
+        else:
+            return None
+
    
 
 def scrap(date, game):
@@ -199,11 +306,13 @@ def scrap(date, game):
         getTodayJackpotEuro()
         result = scrapEuromillions(date)
     if game == 'megamillions':
-        getTodayJackpotMega()
+        # getTodayJackpotMega()
         result = scrapMegamillions(date)
     if game == 'powerball':
         getTodayJackpotPowerball(date)
         result = scrapPowerball(date)
+    if game == 'national-lottery':
+        result = scrapNationalLottery(date)
 
     return result
 
