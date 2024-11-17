@@ -219,6 +219,24 @@ class PowerballScraper(WebScraper):
         else:
             return None
 
+    def get_dividents_db(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                payoutTable = soup.findAll(class_='payoutTable')
+                tbody = payoutTable[2].find('tbody')
+                dividents = ''
+                for row in tbody.select('tr'):
+                    prizePerWinner = row.find(attrs={"data-title": "Prize Amount"})
+                    prizePerWinnerNo = prizePerWinner.text
+                    dividents = dividents + '#' + utils.convert_to_normal_format(prizePerWinnerNo)
+                    
+                return dividents
+            except:
+                return None
+        else:
+            return None
+
     def get_multiplier(self):
         if self.page_content:
             try:
@@ -264,6 +282,29 @@ class PowerballScraper(WebScraper):
                 soup = BeautifulSoup(self.page_content, 'html.parser')
                 payoutTable = soup.findAll(class_='payoutTable')
                 tbody = payoutTable[1].find('tbody')
+                multi_winners = ''
+                for row in tbody.select('tr'):
+                    winnersDiv = row.find(attrs={"data-title": "Winners"})
+                    rollover = winnersDiv.find('span')
+                    if (rollover is not None and rollover.text == 'Rollover'):
+                        multi_winners = multi_winners + '0'
+                    else:
+                        number = winnersDiv.text
+                        multi_winners = multi_winners + '#' + utils.convert_to_normal_format(number)
+                    
+                return multi_winners
+            except:
+                return None
+        else:
+            return None
+
+
+    def get_winners_db(self):
+        if self.page_content:
+            try:
+                soup = BeautifulSoup(self.page_content, 'html.parser')
+                payoutTable = soup.findAll(class_='payoutTable')
+                tbody = payoutTable[2].find('tbody')
                 multi_winners = ''
                 for row in tbody.select('tr'):
                     winnersDiv = row.find(attrs={"data-title": "Winners"})

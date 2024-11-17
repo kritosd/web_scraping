@@ -177,8 +177,8 @@ def scrapPowerball(date, retry = 0):
                 balander=scraper.get_balander_db(),
                 columns=scraper.get_columns(),
                 total_winners=scraper.get_total_winners(),
-                winners=scraper.get_winners(),
-                dividents=scraper.get_dividents(),
+                winners=scraper.get_winners_db(),
+                dividents=scraper.get_dividents_db(),
                 next_jackpot_1=scraper.get_next_jackpot_1(),
                 multiplier=scraper.get_multiplier()
             )
